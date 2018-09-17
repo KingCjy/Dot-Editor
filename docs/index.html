@@ -1,10 +1,84 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Document</title>
+
+    <style type="text/css">
+        * { margin: 0; padding: 0; }
+        .btn { width: 100px; height: 30px; border:0; background-color: #BBDEFB; }
+        .btn:hover { background-color: #64B5F6; }
+        .active { background-color: #2196F3; }
+
+        #layer_wrapper {width: 180px; height: 800px; border: 1px solid black; display: inline-block; }
+
+        .layer { width: 100%; height: 100px; border: 1px solid black; }
+        .layer canvas { float: left; }
+        .layer p { float: right; line-height: 100px; margin-right: 10px; }
+
+        .layer-active { background-color: #ddd; }
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="jquery-ui.min.css">
+
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script type="text/javascript" src="jquery-ui.min.js"></script>
 </head>
 <body>
-    test
+    <form id="generate" action="#">
+        width : <input type="number" value=600 name="width">
+        height : <input type="number" value=800 name="height">
+        row : <input type="number" value=50 name="row">
+        col : <input type="number" value=50 name="col">
+        <button type="submit">generate</button>
+    </form>
+    <br>
+
+    <button class="line_type btn active" id="line" type="button">line</button>
+    <button class="line_type btn" id="curve" type="button">curve</button>
+    <!-- <button class="line_type btn" id="arc" type="button">arc</button> -->
+
+    <br>
+    <div id="wrapper" style="display: inline-block;">
+        
+    </div>
+
+    <div id="layer_wrapper">
+        <!-- <div class="layer">
+            <canvas width="100" height="100"></canvas>
+            <p>layer0</p>
+        </div> -->
+    </div>
+
+    <textarea id="json" style="width: 500px; height: 800px; display: inline-block;" readonly></textarea>
+    <script type="text/javascript" src="javascript.js"></script>
+    <script type="text/javascript">
+        var editor = null;
+
+        document.getElementById('generate').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var width =  Number(document.getElementsByName("width")[0].value);
+            var height =  Number(document.getElementsByName("height")[0].value);
+            var row =  Number(document.getElementsByName("row")[0].value);
+            var col =  Number(document.getElementsByName("col")[0].value);
+
+            if(editor != null) { editor.destroy(); }
+            editor = new DotEditor().init({id: 'wrapper', json: 'json', layer: 'layerWrapper', width: 600, height: 800, row: 50, col: 50})
+        });
+        
+        var changeMode = (event) => {
+            var buttons = document.getElementsByClassName('line_type')
+            for(var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('active')
+            }
+
+            event.target.classList.add('active')
+            editor.changeMode(event.target.innerHTML);
+        }
+        document.getElementById('line').addEventListener('click', changeMode);
+        document.getElementById('curve').addEventListener('click', changeMode);
+    </script>
 </body>
 </html>
