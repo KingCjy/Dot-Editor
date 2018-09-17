@@ -80,7 +80,7 @@
 
         layer.addEventListener('click', this.layerClick.bind(this));
 
-        this.layerList.unshift(new DotLayer('layer' + (this.layerList.length+1), this.context));
+        this.layerList.unshift(new DotLayer('layer' + (this.layerList.length+1), layer, this.context));
         this.generateJson();
     }
     DotEditor.prototype.removeLayer = function() {
@@ -311,11 +311,36 @@
     }
 
 
-    var DotLayer = function(name, context) {
+    var DotLayer = function(name, layer, context) {
         this.lineList = new Array();
         this.curveList = new Array();
         this.context = context;
         this.name = name;
+        this.layer = layer;
+        this.layerContext = this.layer.getElementsByTagName('canvas')[0].getContext('2d');
+
+        var x = this.context.canvas.width - 50;
+        var y = this.context.canvas.height - 50;
+
+        this.width = 0;
+        this.height = 0;
+        this.magnification = 0;
+        if(x > y) {
+            this.width = 100;
+            this.height = 100 * (y / x);
+
+            this.magnification = x/this.width;
+
+        }
+        else {
+            this.width = 100 * (x / y);
+            this.height = 100;
+
+            this.magnification = y/this.height;
+        }
+
+        this.layerContext.canvas.width = this.width;
+        this.layerContext.canvas.height = this.height;
     }
 
     DotLayer.prototype.addLine = function(line) {
@@ -354,8 +379,32 @@
             }
         })
     }   
-    DotLayer.prototype.drawThumbnail = function() {
+    DotLayer.prototype.drawThumbnailLine = function(p1, p2) {
+        let context = this.layerContext;
 
+        context.beginPath();
+        context.moveTo(p1.x/this.magnification, p1.y/this.magnification);
+        context.lineTo(p2.x/this.magnification, p2.y/this.magnification);
+        context.stroke();
+    }
+    DotLayer.prototype.drawThumbnailCurve = function(p1, p2, cp) {
+        var context = this.layerContext;
+
+        context.beginPath();
+        context.moveTo(p1.x/this.magnification,p1.y/this.magnification);
+        context.quadraticCurveTo(cp.x/this.magnification, cp.y/this.magnification, p2.x/this.magnification, p2.y/this.magnification);
+        context.stroke();
+    }
+    DotLayer.prototype.drawThumbnail = function() {
+        var _ = this;
+        this.lineList.map(function(line) {
+            if(line.mode == 'line')  {
+                _.drawThumbnailLine(line.p1, line.p2)    
+            }
+            else if(line.mode == 'curve') {
+                _.drawThumbnailCurve(line.p1, line.p2, line.p3);
+            }
+        })
     }
 
 
