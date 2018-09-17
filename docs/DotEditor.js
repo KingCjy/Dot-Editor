@@ -19,8 +19,7 @@
         this.layerList = new Array();
 
         this.layerIndex = 0;
-        this.layerList.push(new DotLayer(this.context));
-        this.initLayer();
+        this.addLayer();
 
         this.mode = 'line';
 
@@ -46,7 +45,10 @@
         return this;
     }
     DotEditor.prototype.destroy = function() {
-        this.canvas.parentElement.removeChild(this.canvas);   
+        this.canvas.parentElement.removeChild(this.canvas);
+        while (this.layerArea.firstChild) {
+            this.layerArea.removeChild(this.layerArea.firstChild);
+        }
     }
     DotEditor.prototype.changeMode = function(mode) {
         this.mode = mode;
@@ -55,22 +57,63 @@
         this.p2 = null;
         this.draw();
     }
-    DotEditor.prototype.initLayer = function() {
-        /*var layer = document.createElement('div');
+    DotEditor.prototype.addLayer = function() {
+        var layer = document.createElement('div');
         layer.classList.add('layer');
-        layer.classList.add('active');
+        layer.classList.add('layer-active');
 
         var canvas = document.createElement('canvas');
         canvas.setAttribute('width', '100');
         canvas.setAttribute('height', '100');
         
         var name = document.createElement('p');
-        name.innerHTML = 'layer0';
+        name.innerHTML = 'layer' + (this.layerList.length+1);
 
         layer.appendChild(canvas);
         layer.appendChild(name);
 
-        this.layerArea.appendChild(layer);*/
+        for(var i = 0; i < this.layerArea.getElementsByClassName('layer').length; i++) {
+            this.layerArea.getElementsByClassName('layer')[i].classList.remove('layer-active');
+        }
+
+        this.layerArea.insertBefore(layer, this.layerArea.childNodes[0]);
+
+        layer.addEventListener('click', this.layerClick.bind(this));
+
+        this.layerList.unshift(new DotLayer('layer' + (this.layerList.length+1), this.context));
+        this.generateJson();
+    }
+    DotEditor.prototype.removeLayer = function() {
+        if(this.layerList.length == 1) {
+            alert('레이어는 최소한 1개 이상 존재해야 합니다.');
+            return;
+        }
+        this.layerArea.removeChild(this.layerArea.getElementsByClassName('layer')[this.layerIndex]);
+        this.layerList.splice(this.layerIndex, 1);
+
+        if(this.layerList.length-1 < this.layerIndex) {
+            this.layerIndex-=1;
+        }
+
+
+        for(var i = 0; i < this.layerArea.getElementsByClassName('layer').length; i++) {
+            this.layerArea.getElementsByClassName('layer')[i].classList.remove('layer-active');
+        }
+        this.layerArea.getElementsByClassName('layer')[this.layerIndex].classList.add('layer-active');
+        this.generateJson();
+        this.draw();
+    }
+    DotEditor.prototype.layerClick = function(event) {
+        for(var i = 0; i < event.currentTarget.parentElement.getElementsByClassName('layer').length; i++) {
+            event.currentTarget.parentElement.getElementsByClassName('layer')[i].classList.remove('layer-active');
+        }
+        event.currentTarget.classList.add('layer-active');
+
+        this.layerIndex = [].slice.call(event.currentTarget.parentElement.getElementsByClassName('layer')).indexOf(event.currentTarget)
+
+        if(this.layerIndex == -1) {
+            console.log('error');
+        }
     }
     DotEditor.prototype.drawFrame = function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -126,7 +169,6 @@
                     ininjson.points.p3 = [line.p3.col, line.p3.row]
                 }
                 innerJson.push(ininjson);
-                console.log(ininjson);
             })
             json.datas[layer.name] = innerJson;
 
@@ -269,10 +311,11 @@
     }
 
 
-    var DotLayer = function(context) {
+    var DotLayer = function(name, context) {
         this.lineList = new Array();
         this.curveList = new Array();
         this.context = context;
+        this.name = name;
     }
 
     DotLayer.prototype.addLine = function(line) {
