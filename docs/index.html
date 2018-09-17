@@ -16,9 +16,14 @@
         .layer canvas { float: left; }
         .layer p { float: right; line-height: 100px; margin-right: 10px; }
 
-        .layer-active { background-color: #ddd; }
+        .layer-active { background-color: #2196F3; }
     </style>
 
+    <link rel="stylesheet" type="text/css" href="jquery-ui.min.css">
+
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script type="text/javascript" src="jquery-ui.min.js"></script>
 </head>
 <body>
     <form id="generate" action="#">
@@ -33,23 +38,29 @@
     <button class="line_type btn active" id="line" type="button">line</button>
     <button class="line_type btn" id="curve" type="button">curve</button>
     <!-- <button class="line_type btn" id="arc" type="button">arc</button> -->
-
+    
+    <button id="add_layer" class="btn">add layer</button>
+    <button id="del_layer" class="btn">delete layer</button>
     <br>
     <div id="wrapper" style="display: inline-block;">
         
     </div>
 
     <div id="layer_wrapper">
-        <!-- <div class="layer">
-            <canvas width="100" height="100"></canvas>
-            <p>layer0</p>
-        </div> -->
+
     </div>
 
     <textarea id="json" style="width: 500px; height: 800px; display: inline-block;" readonly></textarea>
-    <script type="text/javascript" src="https://kingcjy.github.io/Dot-Editor/DotEditor.js"></script>
+    <script type="text/javascript" src="javascript.js"></script>
     <script type="text/javascript">
         var editor = null;
+
+        var width =  Number(document.getElementsByName("width")[0].value);
+        var height =  Number(document.getElementsByName("height")[0].value);
+        var row =  Number(document.getElementsByName("row")[0].value);
+        var col =  Number(document.getElementsByName("col")[0].value);
+
+        editor = new DotEditor().init({id: 'wrapper', json: 'json', layer: 'layer_wrapper', width: width, height: height, row: row, col: col})
 
         document.getElementById('generate').addEventListener('submit', function(event) {
             event.preventDefault();
@@ -60,7 +71,7 @@
             var col =  Number(document.getElementsByName("col")[0].value);
 
             if(editor != null) { editor.destroy(); }
-            editor = new DotEditor().init({id: 'wrapper', json: 'json', layer: 'layerWrapper', width: 600, height: 800, row: 50, col: 50})
+            editor = new DotEditor().init({id: 'wrapper', json: 'json', layer: 'layer_wrapper', width: width, height: height, row: row, col: col})
         });
         
         var changeMode = (event) => {
@@ -74,6 +85,19 @@
         }
         document.getElementById('line').addEventListener('click', changeMode);
         document.getElementById('curve').addEventListener('click', changeMode);
+
+        document.getElementById('add_layer').addEventListener('click', function(event) {
+            if(editor != null) {
+                editor.addLayer();
+            }
+        })
+
+        document.getElementById('del_layer').addEventListener('click', function(event) {
+            if(editor != null) {
+                editor.removeLayer();
+            }
+        })
+
     </script>
 </body>
 </html>
