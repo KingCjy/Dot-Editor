@@ -113,20 +113,22 @@
         };
 
         this.layerList.map(function(layer, index) {
-            var innerJson = {};
+            var innerJson = [];
             layer.lineList.map(function(line) {
-                let type = line.mode;
-
-                innerJson.type = type;
-                innerJson.points = {};
-                innerJson.points.p1 = [line.p1.col, line.p1.row];
-                innerJson.points.p2 = [line.p2.col, line.p2.row];
+                var type = line.mode;
+                var ininjson = {};
+                ininjson.type = type;
+                ininjson.points = {};
+                ininjson.points.p1 = [line.p1.col, line.p1.row];
+                ininjson.points.p2 = [line.p2.col, line.p2.row];
 
                 if(type != 'line') {
-                    innerJson.points.p3 = [line.p3.col, line.p3.row]
+                    ininjson.points.p3 = [line.p3.col, line.p3.row]
                 }
+                innerJson.push(ininjson);
+                console.log(ininjson);
             })
-            json.datas['layer'+index] = innerJson;
+            json.datas[layer.name] = innerJson;
 
         })
         document.getElementById('json').value = JSON.stringify(json, null, 4);
